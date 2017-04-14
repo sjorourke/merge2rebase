@@ -7,7 +7,7 @@ function m2r {
     unset _last_element_index
     unset _new_branch_name
     unset _orig_branch_name
-    unset _unset_vars
+    unset -f _unset_vars
   }
 
   _orig_branch_name=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p') # http://stackoverflow.com/questions/2111042/how-to-get-the-name-of-the-current-git-branch-into-a-variable-in-a-shell-script
@@ -29,7 +29,6 @@ function m2r {
     echo -n "If you recognize this commit, hit enter to continue, or submit any characters(s) to stop: "
     read _input
   done
-  _curr_commit_hash
   while [[ $_last_element_index > -1 ]]; do
     _curr_commit_hash="${_commit_hash_array[((_last_element_index))]}"
     if [[ $(git log --pretty=%P -n 1 $_curr_commit_hash) =~ ' ' ]]; then # http://stackoverflow.com/questions/9059335/get-parents-of-a-merge-commit-in-git
@@ -39,16 +38,17 @@ function m2r {
       git reset --hard $(git rev-parse $_curr_commit_hash^2) # http://stackoverflow.com/questions/9059335/get-parents-of-a-merge-commit-in-git
       git checkout $_new_branch_name
       git rebase master_aux $_new_branch_name
-      while [[ $(git ls-files -u | cut -f 2 | sort -u) != '' ]]; do # http://stackoverflow.com/questions/3065650/whats-the-simplest-way-to-get-a-list-of-conflicted-files
-        git checkout $_curr_commit_hash $(git ls-files -u | cut -f 2 | sort -u) # http://stackoverflow.com/questions/307579/how-do-i-copy-a-version-of-a-single-file-from-one-git-branch-to-another
-        git add -A
-        git commit -am "merge2rebase - $_orig_branch_name"
-        git rebase --skip # http://stackoverflow.com/questions/14410421/git-rebase-merge-conflict-cannot-continue
-      done
       git branch -D master_aux
+      read _sjo_tmpvar5
     else
       git cherry-pick $_curr_commit_hash
     fi
+    while [[ $(git ls-files -u | cut -f 2 | sort -u) != '' ]]; do # http://stackoverflow.com/questions/3065650/whats-the-simplest-way-to-get-a-list-of-conflicted-files
+      git checkout $_curr_commit_hash $(git ls-files -u | cut -f 2 | sort -u) # http://stackoverflow.com/questions/307579/how-do-i-copy-a-version-of-a-single-file-from-one-git-branch-to-another
+      git add -A
+      git commit -am "merge2rebase - $_orig_branch_name"
+      git rebase --skip # http://stackoverflow.com/questions/14410421/git-rebase-merge-conflict-cannot-continue
+    done
     ((_last_element_index--))
   done
 }
