@@ -46,7 +46,9 @@ function m2r {
       git checkout $_curr_commit_hash $(git ls-files -u | cut -f 2 | sort -u) # http://stackoverflow.com/questions/307579/how-do-i-copy-a-version-of-a-single-file-from-one-git-branch-to-another
       git add -A
       git commit -am "merge2rebase - $_orig_branch_name"
-      git rebase --skip # http://stackoverflow.com/questions/14410421/git-rebase-merge-conflict-cannot-continue
+      if [[ $(git rebase --continue) =~ 'No changes - did you forget to use' ]]; then
+        git rebase --skip # http://stackoverflow.com/questions/14410421/git-rebase-merge-conflict-cannot-continue
+      fi
     done
     ((_last_element_index--))
   done
