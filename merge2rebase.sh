@@ -38,18 +38,16 @@ function m2r {
       git reset --hard $(git rev-parse $_curr_commit_hash^2) # http://stackoverflow.com/questions/9059335/get-parents-of-a-merge-commit-in-git
       git checkout $_new_branch_name
       git rebase master_aux $_new_branch_name
+      while [[ $(git ls-files -u | cut -f 2 | sort -u) != '' ]]; do # http://stackoverflow.com/questions/3065650/whats-the-simplest-way-to-get-a-list-of-conflicted-files
+        git checkout $_curr_commit_hash $(git ls-files -u | cut -f 2 | sort -u) # http://stackoverflow.com/questions/307579/how-do-i-copy-a-version-of-a-single-file-from-one-git-branch-to-another
+        git add -A
+        git commit -am "merge2rebase - $_orig_branch_name"
+        git rebase --skip # http://stackoverflow.com/questions/14410421/git-rebase-merge-conflict-cannot-continue
+      done
       git branch -D master_aux
     else
       git cherry-pick $_curr_commit_hash
     fi
-    while [[ $(git ls-files -u | cut -f 2 | sort -u) != '' ]]; do # http://stackoverflow.com/questions/3065650/whats-the-simplest-way-to-get-a-list-of-conflicted-files
-      git checkout $_curr_commit_hash $(git ls-files -u | cut -f 2 | sort -u) # http://stackoverflow.com/questions/307579/how-do-i-copy-a-version-of-a-single-file-from-one-git-branch-to-another
-      git add -A
-      git commit -am "merge2rebase - $_orig_branch_name"
-      if [[ $(git rebase --continue) =~ 'No changes - did you forget to use' ]]; then
-        git rebase --skip # http://stackoverflow.com/questions/14410421/git-rebase-merge-conflict-cannot-continue
-      fi
-    done
     ((_last_element_index--))
   done
 }
