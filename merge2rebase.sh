@@ -39,7 +39,6 @@ function m2r {
       git checkout $_new_branch_name
       git rebase master_aux $_new_branch_name
       git branch -D master_aux
-      read _sjo_tmpvar5
     else
       git cherry-pick $_curr_commit_hash
     fi
