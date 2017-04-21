@@ -50,4 +50,5 @@ function m2r {
     fi
     ((_last_element_index--))
   done
+  _unset_vars
 }
